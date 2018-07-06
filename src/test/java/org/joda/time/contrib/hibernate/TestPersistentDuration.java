@@ -17,6 +17,9 @@ package org.joda.time.contrib.hibernate;
 
 import junit.framework.Assert;
 import org.hibernate.Session;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.cfg.Configuration;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -33,9 +36,6 @@ import java.sql.SQLException;
  * @version $Revision: $
  */
 public class TestPersistentDuration extends HibernateTestCase {
-    protected void setupConfiguration(Configuration cfg) {
-        cfg.addFile(new File("src/test/java/org/joda/time/contrib/hibernate/testmodel/SomethingThatLasts.hbm.xml"));
-    }
 
     private Duration[] durations = new Duration[]{
             Duration.ZERO, new Duration(30), Period.seconds(30).toDurationTo(new DateTime()), Period.months(3).toDurationFrom(new DateTime())
@@ -53,7 +53,6 @@ public class TestPersistentDuration extends HibernateTestCase {
         }
 
         session.flush();
-        session.connection().commit();
         session.close();
 
         for (int i = 0; i < durations.length; i++) {
@@ -69,6 +68,13 @@ public class TestPersistentDuration extends HibernateTestCase {
         }
 
         // printSqlQueryResults("SELECT * FROM lasting");
+    }
+
+    protected Metadata getMetadata(StandardServiceRegistry registry)
+    {
+        return new MetadataSources(registry)
+                .addResource("org/joda/time/contrib/hibernate/testmodel/SomethingThatLasts.hbm.xml")
+                .buildMetadata();
     }
 
 }

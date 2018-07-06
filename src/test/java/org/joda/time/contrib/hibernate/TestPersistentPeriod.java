@@ -17,6 +17,9 @@ package org.joda.time.contrib.hibernate;
 
 import junit.framework.Assert;
 import org.hibernate.Session;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.cfg.Configuration;
 import org.joda.time.Period;
 import org.joda.time.contrib.hibernate.testmodel.SomethingThatHappens;
@@ -31,9 +34,6 @@ import java.sql.SQLException;
  * @version $Revision: $
  */
 public class TestPersistentPeriod extends HibernateTestCase {
-    protected void setupConfiguration(Configuration cfg) {
-        cfg.addFile(new File("src/test/java/org/joda/time/contrib/hibernate/testmodel/SomethingThatHappens.hbm.xml"));
-    }
 
     private Period[] periods = new Period[]{
             Period.days(2), Period.seconds(30), Period.months(3),
@@ -58,7 +58,6 @@ public class TestPersistentPeriod extends HibernateTestCase {
         }
 
         session.flush();
-        session.connection().commit();
         session.close();
 
         for (int i = 0; i < periods.length; i++) {
@@ -74,6 +73,13 @@ public class TestPersistentPeriod extends HibernateTestCase {
         }
 
         // printSqlQueryResults("SELECT * FROM happening");
+    }
+
+    protected Metadata getMetadata(StandardServiceRegistry registry)
+    {
+        return new MetadataSources(registry)
+                .addResource("org/joda/time/contrib/hibernate/testmodel/SomethingThatHappens.hbm.xml")
+                .buildMetadata();
     }
 
 }

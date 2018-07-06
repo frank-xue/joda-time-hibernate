@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.usertype.EnhancedUserType;
 import org.joda.time.DateTime;
 import org.joda.time.TimeOfDay;
@@ -66,7 +67,7 @@ public class PersistentTimeOfDayExact implements EnhancedUserType, Serializable 
         return object.hashCode();
     }
 
-    public Object nullSafeGet(ResultSet resultSet, String[] strings, Object object) throws HibernateException, SQLException {
+    public Object nullSafeGet(ResultSet resultSet, String[] strings, SessionImplementor session, Object object) throws HibernateException, SQLException {
         return nullSafeGet(resultSet, strings[0]);
 
     }
@@ -79,7 +80,7 @@ public class PersistentTimeOfDayExact implements EnhancedUserType, Serializable 
         return new TimeOfDay(value);
     }
 
-    public void nullSafeSet(PreparedStatement preparedStatement, Object value, int index) throws HibernateException, SQLException {
+    public void nullSafeSet(PreparedStatement preparedStatement, Object value, int index, SessionImplementor session) throws HibernateException, SQLException {
         if (value == null) {
             preparedStatement.setNull(index, SQL_TYPES[0]);
         } else {

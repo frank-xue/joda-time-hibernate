@@ -20,6 +20,9 @@ import java.sql.SQLException;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.cfg.Configuration;
 import org.joda.time.Instant;
 
@@ -50,7 +53,6 @@ public class TestPersistentInstantAsBigInt extends HibernateTestCase
         }
 
         session.flush();
-        session.connection().commit();
         session.close();
 
         for (int i = 0; i<writeReadTimes.length; i++)
@@ -73,8 +75,10 @@ public class TestPersistentInstantAsBigInt extends HibernateTestCase
         session.close();
     }
 
-    protected void setupConfiguration(Configuration cfg)
+    protected Metadata getMetadata(StandardServiceRegistry registry)
     {
-        cfg.addFile(new File("src/test/java/org/joda/time/contrib/hibernate/thingWithInstantAsBigInt.hbm.xml"));
+        return new MetadataSources(registry)
+                .addResource("org/joda/time/contrib/hibernate/thingWithInstantAsBigInt.hbm.xml")
+                .buildMetadata();
     }
 }

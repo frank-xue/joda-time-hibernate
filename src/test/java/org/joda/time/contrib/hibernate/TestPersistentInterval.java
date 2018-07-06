@@ -23,6 +23,9 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.cfg.Configuration;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -114,11 +117,13 @@ public class TestPersistentInterval extends HibernateTestCase
         assertEquals(0, queriedPlans.size());
     }
 
-    protected void setupConfiguration(Configuration cfg)
+    protected Metadata getMetadata(StandardServiceRegistry registry)
     {
-        cfg.addFile(new File("src/test/java/org/joda/time/contrib/hibernate/plan.hbm.xml"));
+        return new MetadataSources(registry)
+                .addResource("org/joda/time/contrib/hibernate/plan.hbm.xml")
+                .buildMetadata();
     }
-    
+
     protected void tearDown() throws Exception
     {
         remove();

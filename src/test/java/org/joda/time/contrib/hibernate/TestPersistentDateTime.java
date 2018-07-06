@@ -15,12 +15,13 @@
  */
 package org.joda.time.contrib.hibernate;
 
-import java.io.File;
 import java.sql.SQLException;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -50,7 +51,6 @@ public class TestPersistentDateTime extends HibernateTestCase
         }
 
         session.flush();
-        session.connection().commit();
         session.close();
 
         for (int i = 0; i<writeReadTimes.length; i++)
@@ -90,7 +90,6 @@ public class TestPersistentDateTime extends HibernateTestCase
         }
 
         session.flush();
-        session.connection().commit();
         session.close();
 
         for (int i = 0; i<writeReadTimes.length; i++)
@@ -110,9 +109,11 @@ public class TestPersistentDateTime extends HibernateTestCase
         session.close();
     }
 
-    protected void setupConfiguration(Configuration cfg)
+    protected Metadata getMetadata(StandardServiceRegistry registry)
     {
-        cfg.addFile(new File("src/test/java/org/joda/time/contrib/hibernate/event.hbm.xml"));
-        cfg.addFile(new File("src/test/java/org/joda/time/contrib/hibernate/eventTZ.hbm.xml"));
+        return new MetadataSources(registry)
+                .addResource("org/joda/time/contrib/hibernate/event.hbm.xml")
+                .addResource("org/joda/time/contrib/hibernate/eventTZ.hbm.xml")
+                .buildMetadata();
     }
 }

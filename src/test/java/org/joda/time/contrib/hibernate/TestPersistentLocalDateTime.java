@@ -20,6 +20,9 @@ import java.sql.SQLException;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.cfg.Configuration;
 import org.joda.time.LocalDateTime;
 
@@ -32,14 +35,12 @@ public class TestPersistentLocalDateTime extends HibernateTestCase
         new LocalDateTime(1700, 1, 1, 13, 12, 11)
     };
 
-    public void testSimpleStore() throws SQLException
-    {
+    public void testSimpleStore() throws SQLException {
         SessionFactory factory = getSessionFactory();
 
         Session session = factory.openSession();
 
-        for (int i = 0; i<writeReadTimes.length; i++)
-        {
+        for (int i = 0; i < writeReadTimes.length; i++) {
             LocalDateTime writeReadTime = writeReadTimes[i];
 
             Event event = new Event();
@@ -50,11 +51,9 @@ public class TestPersistentLocalDateTime extends HibernateTestCase
         }
 
         session.flush();
-        session.connection().commit();
         session.close();
 
-        for (int i = 0; i<writeReadTimes.length; i++)
-        {
+        for (int i = 0; i < writeReadTimes.length; i++) {
             LocalDateTime writeReadTime = writeReadTimes[i];
 
             session = factory.openSession();
@@ -65,16 +64,18 @@ public class TestPersistentLocalDateTime extends HibernateTestCase
 
             // we loose the timezone, so we have to normalize both to offset=0
             assertEquals("get failed - returned different time",
-                writeReadTime,
-                eventReread.getLocalDateTime());
+                    writeReadTime,
+                    eventReread.getLocalDateTime());
 
             session.close();
         }
     }
 
-    protected void setupConfiguration(Configuration cfg)
+    protected Metadata getMetadata(StandardServiceRegistry registry)
     {
-        cfg.addFile(new File("src/test/java/org/joda/time/contrib/hibernate/event.hbm.xml"));
-        cfg.addFile(new File("src/test/java/org/joda/time/contrib/hibernate/eventTZ.hbm.xml"));
+        return new MetadataSources(registry)
+                .addResource("org/joda/time/contrib/hibernate/event.hbm.xml")
+                .addResource("org/joda/time/contrib/hibernate/eventTZ.hbm.xml")
+                .buildMetadata();
     }
 }

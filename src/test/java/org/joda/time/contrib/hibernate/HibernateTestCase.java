@@ -18,61 +18,43 @@ package org.joda.time.contrib.hibernate;
 import junit.framework.TestCase;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.dialect.HSQLDialect;
-import org.hibernate.tool.hbm2ddl.SchemaUpdate;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.hibernate.tool.schema.TargetType;
 
-import java.sql.Connection;
-import java.sql.Statement;
+import java.util.EnumSet;
 
 public abstract class HibernateTestCase extends TestCase
 {
     private SessionFactory factory;
-    private Configuration cfg;
+    protected Metadata metadata;
 
     protected SessionFactory getSessionFactory()
     {
         if (this.factory == null)
         {
-                    cfg = new Configuration();
+            StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                    .applySetting("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver")
+                    .applySetting("hibernate.connection.url", "jdbc:hsqldb:mem:hbmtest" + getClass().getName())
+                    .applySetting("hibernate.dialect", HSQLDialect.class.getName())
+                    .applySetting("hibernate.show_sql", "true")
+                    .build();
 
-                    setupConfiguration(cfg);
+            metadata =  getMetadata(registry);
 
-            cfg.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver");
-            cfg.setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:hbmtest" + getClass().getName());
-            cfg.setProperty("hibernate.dialect", HSQLDialect.class.getName());
-
-            cfg.setProperty("hibernate.show_sql", "true");
-            SessionFactory factory = cfg.buildSessionFactory();
-
-            SchemaUpdate update = new SchemaUpdate(cfg);
-            update.execute(true, true);
-
-            this.factory = factory;
+            this.factory = metadata.buildSessionFactory();
+            new SchemaExport().create(EnumSet.of(TargetType.DATABASE, TargetType.STDOUT), metadata);
         }
-        return factory;
+        return this.factory;
     }
 
     protected void tearDown() throws Exception
     {
-            final String[] dropSQLs = cfg.generateDropSchemaScript(new HSQLDialect());
-            final Connection connection = getSessionFactory().openSession().connection();
-            try {
-                Statement stmt = connection.createStatement();
-                for (int i = 0; i < dropSQLs.length; i++) {
-                    //System.out.println("dropSQLs[i] = " + dropSQLs[i]);
-                    stmt.executeUpdate(dropSQLs[i]);
-                }
-            } finally {
-                connection.close();
-            }
-
-            if (this.factory != null)
-        {
-            this.factory.close();
-            this.factory = null;
-        }
+        new SchemaExport().drop(EnumSet.of(TargetType.DATABASE, TargetType.STDOUT), metadata);
     }
 
-    protected abstract void setupConfiguration(Configuration cfg);
+    protected abstract Metadata getMetadata(StandardServiceRegistry registry);
 }

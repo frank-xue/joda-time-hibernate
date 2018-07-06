@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.hibernate.usertype.CompositeUserType;
@@ -96,8 +96,8 @@ public class PersistentInterval implements CompositeUserType, Serializable {
             return null;
         }
         PersistentDateTime pst = new PersistentDateTime();
-        DateTime start = (DateTime) pst.nullSafeGet(resultSet, names[0]);
-        DateTime end = (DateTime) pst.nullSafeGet(resultSet, names[1]);
+        DateTime start = (DateTime) pst.nullSafeGet(resultSet, names[0], session);
+        DateTime end = (DateTime) pst.nullSafeGet(resultSet, names[1], session);
         if (start == null || end == null) {
             return null;
         }
